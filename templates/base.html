@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Fit Log{% endblock %}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    
+    <link id="lightTheme" rel="stylesheet" href="{{ url_for('static', filename='css/style_white.css') }}" >
+    <link id="darkTheme" rel="stylesheet" href="{{ url_for('static', filename='css/style_dark.css') }}" disabled>
+
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="{{ url_for('index') }}">
+                <i class="fas fa-dumbbell me-2"></i>Fit Log
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse " id="navbarNav">
+                <ul class="navbar-nav me-auto ">
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('index') }}">
+                            <i class="fas fa-home me-1 "></i>หน้าหลัก
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('profile') }}">
+                            <i class="fas fa-user me-1"></i>โปรไฟล์
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('activity') }}">
+                            <i class="fas fa-running me-1"></i>บันทึกกิจกรรม
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('status') }}">
+                            <i class="fas fa-chart-line me-1"></i>สถานะ
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('weight') }}">
+                            <i class="fas fa-weight me-1"></i>น้ำหนัก
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-use-white" href="{{ url_for('calculator') }}">
+                            <i class="fas fa-calculator me-1"></i>คำนวณ
+                        </a>
+                    </li>
+                </ul>
+                <button id="toggleThemeBtn" class="btn btn-outline-light d-flex align-items-center gap-2 px-3 py-2 rounded-pill shadow-sm me-3">
+                    <i class="fas fa-moon"></i>
+                    <span>Dark Mode</span>
+                </button>
+
+                {% if session.current_user_id %}
+                    <span class="navbar-text me-3 text-use-white">
+                        <i class="fas fa-user-circle me-1"></i>
+                        ผู้ใช้: <strong>{{ session.get('current_user_name', 'ไม่ระบุ') }}</strong>
+                    </span>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container-fluid" style="margin-top: 80px;">
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                        <i class="fas fa-{{ 'exclamation-circle' if category == 'error' else 'info-circle' if category == 'info' else 'check-circle' if category == 'success' else 'exclamation-triangle' }} me-2"></i>
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+        
+        {% block content %}{% endblock %}
+    </div>
+    
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
+    {% block scripts %}{% endblock %}
+</body>
+</html>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const lightTheme = document.getElementById('lightTheme');
+  const darkTheme = document.getElementById('darkTheme');
+  const toggleBtn = document.getElementById('toggleThemeBtn');
+  const icon = toggleBtn.querySelector('i');
+  const label = toggleBtn.querySelector('span');
+
+  // Load saved theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme === 'dark') {
+    darkTheme.disabled = false;
+    lightTheme.disabled = true;
+    icon.classList.replace('fa-moon', 'fa-sun');
+    label.textContent = 'Light Mode';
+  }
+
+  toggleBtn.addEventListener('click', function () {
+    const isDark = !darkTheme.disabled;
+
+    darkTheme.disabled = isDark;
+    lightTheme.disabled = !isDark;
+
+    if (isDark) {
+      localStorage.setItem('theme', 'light');
+      icon.classList.replace('fa-sun', 'fa-moon');
+      label.textContent = 'Dark Mode';
+    } else {
+      localStorage.setItem('theme', 'dark');
+      icon.classList.replace('fa-moon', 'fa-sun');
+      label.textContent = 'Light Mode';
+    }
+  });
+});
+</script>
+

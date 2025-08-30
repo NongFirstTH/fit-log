@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}บันทึกกิจกรรม - Fit Log{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-running me-2"></i>บันทึกกิจกรรมการออกกำลังกาย
+            </h1>
+        </div>
+    </div>
+    
+    {% if user is none %}
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                    <h5>กรุณาเลือกผู้ใช้ก่อน</h5>
+                    <p class="text-muted">คุณต้องเลือกผู้ใช้เพื่อบันทึกกิจกรรม</p>
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary">
+                        <i class="fas fa-user me-1"></i>ไปที่จัดการโปรไฟล์
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    
+    <div class="row">
+        <!-- ฟอร์มบันทึกกิจกรรม -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-plus-circle me-2"></i>บันทึกกิจกรรมใหม่
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_activity') }}">
+                        <div class="mb-3">
+                            <label for="date" class="form-label">วันที่</label>
+                            <input type="date" class="form-control" id="date" name="date" 
+                                   value="{{ today }}" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="activity_name" class="form-label">ชื่อกิจกรรม</label>
+                            <select class="form-select" id="activity_name" name="activity_name" required>
+                                <option value="">-- เลือกกิจกรรม --</option>
+                                <optgroup label="การเดินและวิ่ง">
+                                    <option value="walking_slow">เดินเบา ๆ</option>
+                                    <option value="walking_moderate">เดินปานกลาง</option>
+                                    <option value="walking_fast">เดินเร็ว</option>
+                                    <option value="jogging">วิ่งจ๊อกกิ้ง</option>
+                                    <option value="running">วิ่ง</option>
+                                </optgroup>
+                                <optgroup label="จักรยาน">
+                                    <option value="cycling_leisure">ปั่นจักรยานเบา ๆ</option>
+                                    <option value="cycling_moderate">ปั่นจักรยานปานกลาง</option>
+                                </optgroup>
+                                <optgroup label="กิจกรรมในน้ำ">
+                                    <option value="swimming">ว่ายน้ำ</option>
+                                </optgroup>
+                                <optgroup label="ออกกำลังกายในห้อง">
+                                    <option value="weight_training">ยกน้ำหนัก</option>
+                                    <option value="yoga">โยคะ</option>
+                                    <option value="aerobics">แอโรบิค</option>
+                                    <option value="dancing">เต้นรำ</option>
+                                </optgroup>
+                                <optgroup label="กีฬา">
+                                    <option value="basketball">บาสเกตบอล</option>
+                                    <option value="soccer">ฟุตบอล</option>
+                                    <option value="tennis">เทนนิส</option>
+                                    <option value="badminton">แบดมินตัน</option>
+                                </optgroup>
+                            </select>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="duration" class="form-label">ระยะเวลา (นาที)</label>
+                            <input type="number" class="form-control" id="duration" name="duration" 
+                                   min="1" max="480" placeholder="เช่น 30">
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="details" class="form-label">รายละเอียดเพิ่มเติม</label>
+                            <textarea class="form-control" id="details" name="details" rows="3" 
+                                      placeholder="เช่น วิ่งที่สวนลุม 3 กม."></textarea>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="calories" class="form-label">แคลลอรี่ที่เผาผลาญ (ไม่บังคับ)</label>
+                            <input type="number" class="form-control" id="calories" name="calories" 
+                                   step="0.1" min="0" placeholder="ระบบจะคำนวณให้อัตโนมัติ">
+                            <div class="form-text">หากไม่ระบุ ระบบจะคำนวณตามกิจกรรมและระยะเวลา</div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save me-2"></i>บันทึกกิจกรรม
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ข้อมูลผู้ใช้ -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-circle me-2"></i>ข้อมูลผู้ใช้
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="text-muted small">ชื่อ</div>
+                            <div class="h5">{{ user[1]}}</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-muted small">อายุ</div>
+                            <div class="h5">{{ user.age }} ปี</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-muted small">น้ำหนัก</div>
+                            <div class="h5">{{ "%.1f"|format(user.weight) }} กก.</div>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="text-muted small">เป้าหมาย</div>
+                            <div class="h5">{{ "%.1f"|format(user.target_weight) }} กก.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- คำแนะนำแคลลอรี่ -->
+            <div class="card mt-3">
+                <div class="card-header bg-warning text-dark">
+                    <h6 class="mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>คำแนะนำ
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>การเผาผลาญแคลลอรี่:</strong></p>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-fire text-danger me-1"></i> เดิน 30 นาที ≈ 150 แคลลอรี่</li>
+                        <li><i class="fas fa-fire text-danger me-1"></i> วิ่ง 30 นาที ≈ 300 แคลลอรี่</li>
+                        <li><i class="fas fa-fire text-danger me-1"></i> ปั่นจักรยาน 30 นาที ≈ 200 แคลลอรี่</li>
+                        <li><i class="fas fa-fire text-danger me-1"></i> ว่ายน้ำ 30 นาที ≈ 250 แคลลอรี่</li>
+                    </ul>
+                    <div class="text-muted">
+                        <small>*ค่าประมาณสำหรับผู้ใหญ่น้ำหนัก 70 กก.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- ประวัติกิจกรรม -->
+    {% if activities is defined and not activities.empty %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-history me-2"></i>ประวัติกิจกรรม
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>วันที่</th>
+                                    <th>กิจกรรม</th>
+                                    <th>ระยะเวลา</th>
+                                    <th>แคลลอรี่</th>
+                                    <th>รายละเอียด</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for _, activity in activities.iterrows() %}
+                                <tr>
+                                    <td>{{ activity.date if activity.date else '-' }}</td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ activity.activity_name }}</span>
+                                    </td>
+                                    <td>
+                                        {% if activity.duration_minutes %}
+                                            {{ activity.duration_minutes }} นาที
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="text-danger">
+                                            <i class="fas fa-fire me-1"></i>{{ "%.1f"|format(activity.calories_burned) }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ activity.details if activity.details|string !='nan'  else '-' }}
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" 
+                                                onclick="confirmDeleteActivity({{ activity.activity_id }}, '{{ activity.activity_name }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-running fa-4x text-muted mb-3"></i>
+                    <h5>ยังไม่มีบันทึกกิจกรรม</h5>
+                    <p class="text-muted">เริ่มบันทึกกิจกรรมการออกกำลังกายของคุณเลย!</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    {% endif %}
+</div>
+
+<!-- Modal ยืนยันการลบกิจกรรม -->
+<div class="modal fade" id="deleteActivityModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ยืนยันการลบกิจกรรม</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการลบกิจกรรม <strong id="deleteActivityName"></strong> ใช่หรือไม่?</p>
+                <p class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>การลบจะทำให้ข้อมูลกิจกรรมนี้หายไป</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <a href="#" id="confirmDeleteActivityBtn" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i>ลบ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// ตั้งค่าวันที่ปัจจุบัน
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+});
+
+function confirmDeleteActivity(activityId, activityName) {
+    document.getElementById('deleteActivityName').textContent = activityName;
+    document.getElementById('confirmDeleteActivityBtn').href = "{{ url_for('delete_activity', activity_id=0) }}".replace('0', activityId);
+    new bootstrap.Modal(document.getElementById('deleteActivityModal')).show();
+}
+
+// คำนวณแคลลอรี่โดยประมาณเมื่อเลือกกิจกรรมและใส่เวลา
+document.getElementById('activity_name').addEventListener('change', calculateEstimatedCalories);
+document.getElementById('duration').addEventListener('input', calculateEstimatedCalories);
+
+function calculateEstimatedCalories() {
+    const activity = document.getElementById('activity_name').value;
+    const duration = parseInt(document.getElementById('duration').value) || 0;
+    const weight = {{ user.weight  }}; // น้ำหนักของผู้ใช้
+    
+    if (activity && duration > 0) {
+        const metValues = {
+            'walking_slow': 2.5,
+            'walking_moderate': 3.5,
+            'walking_fast': 4.3,
+            'jogging': 7.0,
+            'running': 9.8,
+            'cycling_leisure': 4.0,
+            'cycling_moderate': 8.0,
+            'swimming': 6.0,
+            'weight_training': 3.5,
+            'yoga': 2.5,
+            'aerobics': 6.5,
+            'basketball': 8.0,
+            'soccer': 10.0,
+            'tennis': 7.3,
+            'badminton': 5.5,
+            'dancing': 4.8
+        };
+        
+        const met = metValues[activity] || 3.5;
+        const calories = Math.round(met * weight * (duration / 60));
+        
+        const caloriesInput = document.getElementById('calories');
+        if (!caloriesInput.value) {
+            caloriesInput.placeholder = `ประมาณ ${calories} แคลลอรี่`;
+        }
+    }
+}
+</script>
+{% endblock %}

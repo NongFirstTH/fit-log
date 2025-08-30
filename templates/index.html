@@ -1,0 +1,197 @@
+{% extends "base.html" %}
+
+{% block title %}หน้าหลัก - Fit Log{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <div class="text-center mb-4">
+                <h1 class="display-4 text-white mb-3">
+                    <i class="fas fa-dumbbell me-3"></i>Fit Log
+                </h1>
+                <p class="lead text-white-50">แอปพลิเคชันบันทึกการออกกำลังกายและติดตามความคืบหน้า</p>
+            </div>
+        </div>
+    </div>
+    
+    {% if not current_user %}
+    <!-- ยังไม่เลือกผู้ใช้ -->
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-body text-center p-5">
+                    <i class="fas fa-user-plus fa-4x text-muted mb-4"></i>
+                    <h3>ยินดีต้อนรับสู่ Fit Log!</h3>
+                    <p class="text-muted mb-4">เริ่มต้นการติดตามสุขภาพของคุณ โดยการสร้างโปรไฟล์ หรือเลือกผู้ใช้ที่มีอยู่</p>
+                    
+                    {% if users is defined and not users.empty %}
+                    <div class="mb-4">
+                        <h5>เลือกผู้ใช้ที่มีอยู่:</h5>
+                        <div class="row">
+                            {% for _, user in users.iterrows() %}
+                            <div class="col-md-4 mb-3">
+                                <div class="card border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="fas fa-user-circle fa-2x text-primary mb-2"></i>
+                                        <h6>{{ user[1] }}</h6>
+                                        <small class="text-muted">อายุ {{ user.age }} ปี</small><br>
+                                        <small class="text-muted">{{ user.weight }} กก. / {{ user.height }} ซม.</small>
+                                        <div class="mt-2">
+                                            <a href="{{ url_for('set_current_user', user_id=user.user_id) }}" 
+                                               class="btn btn-primary btn-sm">
+                                                <i class="fas fa-sign-in-alt me-1"></i>เลือก
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{{ url_for('profile') }}" class="btn btn-primary btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>จัดการโปรไฟล์
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <!-- มีผู้ใช้แล้ว - แสดงสถิติ -->
+    {% if stats %}
+    <div class="row mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <i class="fas fa-weight fa-2x text-primary mb-2"></i>
+                    <div class="stats-number">{{ "%.1f"|format(stats.current_weight) }}</div>
+                    <div class="text-muted">น้ำหนักปัจจุบัน (กก.)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-success mb-2"></i>
+                    <div class="stats-number">{{ "%.1f"|format(stats.target_weight) }}</div>
+                    <div class="text-muted">เป้าหมาย (กก.)</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <i class="fas fa-running fa-2x text-warning mb-2"></i>
+                    <div class="stats-number">{{ stats.total_activities }}</div>
+                    <div class="text-muted">กิจกรรมทั้งหมด</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-4">
+            <div class="card stats-card">
+                <div class="card-body">
+                    <i class="fas fa-fire fa-2x text-danger mb-2"></i>
+                    <div class="stats-number">{{ "%.0f"|format(stats.total_calories_burned) }}</div>
+                    <div class="text-muted">แคลลอรี่ที่เผาผลาญ</div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- แสดงความคืบหน้าน้ำหนัก -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="fas fa-chart-line me-2"></i>ความคืบหน้าสู่เป้าหมาย
+                    </h5>
+                    <div class="progress mb-3">
+                        <div class="progress-bar progress-bar-animated" role="progressbar" 
+                            style="width: {{ stats.weight_progress }}%" 
+                            aria-valuenow="{{ stats.weight_progress }}" 
+                            aria-valuemin="0" aria-valuemax="100">
+                            {{ "%.1f"|format(stats.weight_progress) }}%
+                        </div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="text-muted small">น้ำหนักเริ่มต้น</div>
+                            <div class="h5">{{ "%.1f"|format(stats.initial_weight) }} กก.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">น้ำหนักปัจจุบัน</div>
+                            <div class="h5 text-primary">{{ "%.1f"|format(stats.user.weight) }} กก.</div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-muted small">เป้าหมาย</div>
+                            <div class="h5 text-success">{{ "%.1f"|format(stats.target_weight) }} กก.</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    
+    <!-- เมนูลัด -->
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-plus-circle fa-4x text-primary mb-3"></i>
+                    <h5 class="card-title">บันทึกกิจกรรมใหม่</h5>
+                    <p class="card-text text-muted">เพิ่มกิจกรรมการออกกำลังกายในวันนี้</p>
+                    <a href="{{ url_for('activity') }}" class="btn btn-primary">
+                        <i class="fas fa-running me-2"></i>บันทึกตอนนี้
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-weight fa-4x text-success mb-3"></i>
+                    <h5 class="card-title">อัปเดตน้ำหนัก</h5>
+                    <p class="card-text text-muted">บันทึกน้ำหนักปัจจุบันของคุณ</p>
+                    <a href="{{ url_for('weight') }}" class="btn btn-success">
+                        <i class="fas fa-balance-scale me-2"></i>บันทึกน้ำหนัก
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-chart-bar fa-4x text-warning mb-3"></i>
+                    <h5 class="card-title">ดูสถิติ</h5>
+                    <p class="card-text text-muted">ติดตามความคืบหน้าและผลการออกกำลังกาย</p>
+                    <a href="{{ url_for('status') }}" class="btn btn-warning">
+                        <i class="fas fa-analytics me-2"></i>ดูสถิติ
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-body text-center">
+                    <i class="fas fa-calculator fa-4x text-info mb-3"></i>
+                    <h5 class="card-title">คำนวณสุขภาพ</h5>
+                    <p class="card-text text-muted">คำนวณ BMI, TDEE และแคลลอรี่ที่ต้องการ</p>
+                    <a href="{{ url_for('calculator') }}" class="btn btn-info">
+                        <i class="fas fa-calculator me-2"></i>คำนวณ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    {% endif %}
+</div>
+{% endblock %}
+                        

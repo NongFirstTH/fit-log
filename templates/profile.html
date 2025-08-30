@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+
+{% block title %}จัดการโปรไฟล์ - Fit Log{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="text-white mb-4">
+                <i class="fas fa-user-cog me-2"></i>จัดการโปรไฟล์ผู้ใช้
+            </h1>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- เพิ่มผู้ใช้ใหม่ -->
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>เพิ่มผู้ใช้ใหม่
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('add_user') }}">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">ชื่อ</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="weight" class="form-label">น้ำหนัก (กก.)</label>
+                                <input type="number" class="form-control" id="weight" name="weight" 
+                                       step="0.1" min="1" max="300" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="height" class="form-label">ส่วนสูง (ซม.)</label>
+                                <input type="number" class="form-control" id="height" name="height" 
+                                       step="0.1" min="50" max="250" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="age" class="form-label">อายุ (ปี)</label>
+                                <input type="number" class="form-control" id="age" name="age" 
+                                       min="1" max="120" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="target_weight" class="form-label">เป้าหมายน้ำหนัก (กก.)</label>
+                                <input type="number" class="form-control" id="target_weight" name="target_weight" 
+                                       step="0.1" min="1" max="300" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-plus me-2"></i>เพิ่มผู้ใช้
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- แก้ไขผู้ใช้ปัจจุบัน -->
+        {% if current_user is not none %}
+        <div class="col-md-6 mb-4">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-edit me-2"></i>แก้ไขข้อมูลปัจจุบัน
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('update_user', user_id=current_user.user_id) }}">
+                        <div class="mb-3">
+                            <label for="edit_name" class="form-label">ชื่อ</label>
+                            <input type="text" class="form-control" id="edit_name" name="name" 
+                                   value="{{ current_user["name"] }}" required>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_weight" class="form-label">น้ำหนัก (กก.)</label>
+                                <input type="number" class="form-control" id="edit_weight" name="weight" 
+                                       step="0.1" min="1" max="300" value="{{ current_user.weight }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_height" class="form-label">ส่วนสูง (ซม.)</label>
+                                <input type="number" class="form-control" id="edit_height" name="height" 
+                                       step="0.1" min="50" max="250" value="{{ current_user.height }}" required>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_age" class="form-label">อายุ (ปี)</label>
+                                <input type="number" class="form-control" id="edit_age" name="age" 
+                                       min="1" max="120" value="{{ current_user.age }}" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="edit_target_weight" class="form-label">เป้าหมายน้ำหนัก (กก.)</label>
+                                <input type="number" class="form-control" id="edit_target_weight" name="target_weight" 
+                                       step="0.1" min="1" max="300" value="{{ current_user.target_weight }}" required>
+                            </div>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-success w-100">
+                            <i class="fas fa-save me-2"></i>บันทึกการแก้ไข
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <!-- รายการผู้ใช้ทั้งหมด -->
+    {% if users is defined and not users.empty %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-users me-2"></i>ผู้ใช้ทั้งหมด
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>ชื่อ</th>
+                                    <th>อายุ</th>
+                                    <th>น้ำหนัก</th>
+                                    <th>ส่วนสูง</th>
+                                    <th>เป้าหมาย</th>
+                                    <th>สร้างเมื่อ</th>
+                                    <th>จัดการ</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for i, user in users.iterrows() %}
+                                <tr {% if current_user is not none and user.user_id == current_user.user_id %}class="table-primary"{% endif %}>
+                                    <td>
+                                        <strong>{{ user["name"] }}</strong>
+                                        {% if current_user is not none and user.user_id == current_user.user_id %}
+                                            <span class="badge bg-primary ms-2">ปัจจุบัน</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ user.age }} ปี</td>
+                                    <td>{{ "%.1f"|format(user.weight) }} กก.</td>
+                                    <td>{{ "%.1f"|format(user.height) }} ซม.</td>
+                                    <td>{{ "%.1f"|format(user.target_weight) }} กก.</td>
+                                    <td>{{ user.created_date[:10] if user.created_date else '-' }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            {% if current_user is not none or user.user_id != current_user.user_id %}
+                                            <a href="{{ url_for('set_current_user', user_id=user.user_id) }}" 
+                                               class="btn btn-outline-primary" title="เลือกผู้ใช้นี้">
+                                                <i class="fas fa-user-check"></i>
+                                            </a>
+                                            {% endif %}
+                                            
+                                            <button type="button" class="btn btn-outline-danger" 
+                                                    onclick="confirmDelete( '{{ user.user_id }}', '{{ user[1] }}' )"
+                                                    title="ลบผู้ใช้">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body text-center">
+                    <i class="fas fa-user-slash fa-4x text-muted mb-3"></i>
+                    <h5>ยังไม่มีผู้ใช้ในระบบ</h5>
+                    <p class="text-muted">เริ่มต้นโดยการเพิ่มผู้ใช้ใหม่ด้านบน</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Modal ยืนยันการลบ -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">ยืนยันการลบ</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>คุณต้องการลบผู้ใช้ <strong id="deleteUserName"></strong> ใช่หรือไม่?</p>
+                <p class="text-danger"><i class="fas fa-exclamation-triangle me-1"></i>การลบจะทำให้ข้อมูลทั้งหมดของผู้ใช้หายไป</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ยกเลิก</button>
+                <a href="#" id="confirmDeleteBtn" class="btn btn-danger">
+                    <i class="fas fa-trash me-1"></i>ลบ
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function confirmDelete(userId, userName) {
+    document.getElementById('deleteUserName').textContent = userName;
+    document.getElementById('confirmDeleteBtn').href = "{{ url_for('delete_user', user_id=0) }}".replace('0', userId);
+    new bootstrap.Modal(document.getElementById('deleteModal')).show();
+}
+</script>
+{% endblock %}
